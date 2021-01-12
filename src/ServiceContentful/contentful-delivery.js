@@ -18,7 +18,17 @@ const fetchData = (contentType) => {
       .getEntries({
         content_type: contentType,
       })
-      .then((response) => resolve(response.items))
+      .then((response) =>
+        resolve(
+          response.items.map((currentValue) => {
+            const {
+              sys: { id },
+              fields: { username, code, startDate, dui, position },
+            } = currentValue;
+            return { id, username, code, startDate, dui, position };
+          })
+        )
+      )
       .catch((error) => reject(new Error(error)));
   });
 };

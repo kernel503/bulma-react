@@ -3,20 +3,36 @@ import CatDog from '../ServiceContentful/CatDog';
 
 const ModalEmployee = ({ employee, isUpdate, setComponentEmployee }) => {
   const [dataEmployee, setDataEmployee] = useState(employee);
+  const [notification, setNotification] = useState({ show: false, message: '', isSuccess: true });
+  const [loading, setLoading] = useState(false);
 
   const closeModal = useCallback(() => setComponentEmployee(false), [setComponentEmployee]);
 
   const manageContent = useCallback(() => {
+    setLoading(true);
     if (isUpdate) {
       CatDog.updateEmployee(dataEmployee)
-        .then((result) => console.log(result))
-        .catch((err) => console.log(err));
+        .then((result) => {
+          setLoading(false);
+          setNotification({ show: true, message: result, isSuccess: true });
+        })
+        .catch((err) => {
+          setLoading(false);
+          setNotification({ show: true, message: err, isSuccess: false });
+        });
     } else {
       CatDog.createEmployee(dataEmployee)
-        .then((result) => console.log(result))
-        .catch((err) => console.log(err));
+        .then((result) => {
+          setLoading(false);
+          setDataEmployee({ id: '', username: '', code: '', startDate: Date.now(), dui: '', position: '' });
+          setNotification({ show: true, message: result, isSuccess: true });
+        })
+        .catch((err) => {
+          setLoading(false);
+          setNotification({ show: true, message: err, isSuccess: false });
+        });
     }
-  }, [isUpdate, dataEmployee]);
+  }, [isUpdate, dataEmployee, setLoading]);
 
   const onChangeInput = useCallback(
     (e) => {
@@ -38,6 +54,11 @@ const ModalEmployee = ({ employee, isUpdate, setComponentEmployee }) => {
           <button className='delete' aria-label='close' onClick={closeModal} />
         </header>
         <section className='modal-card-body'>
+          {notification.show && (
+            <article className={`message ${notification.isSuccess ? 'is-primary' : 'is-danger'}`}>
+              <div className='message-body'>{notification.message}</div>
+            </article>
+          )}
           <div className='field'>
             <label className='label' htmlFor='username'>
               Username
@@ -104,6 +125,11 @@ const ModalEmployee = ({ employee, isUpdate, setComponentEmployee }) => {
           <button className='button' onClick={closeModal}>
             Cancel
           </button>
+          {loading && (
+            <progress className='progress is-small is-primary' max={100}>
+              15%
+            </progress>
+          )}
         </footer>
       </div>
     </div>
