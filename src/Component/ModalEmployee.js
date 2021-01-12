@@ -6,7 +6,9 @@ const ModalEmployee = ({ employee, isUpdate, setComponentEmployee }) => {
   const [notification, setNotification] = useState({ show: false, message: '', isSuccess: true });
   const [loading, setLoading] = useState(false);
 
-  const closeModal = useCallback(() => setComponentEmployee(false), [setComponentEmployee]);
+  const closeModal = useCallback(() => {
+    setComponentEmployee(null);
+  }, [setComponentEmployee]);
 
   const manageContent = useCallback(() => {
     setLoading(true);
@@ -51,7 +53,7 @@ const ModalEmployee = ({ employee, isUpdate, setComponentEmployee }) => {
       <div className='modal-card'>
         <header className='modal-card-head'>
           <p className='modal-card-title'>{isUpdate ? 'Update Employee' : 'New Employee'}</p>
-          <button className='delete' aria-label='close' onClick={closeModal} />
+          {!loading && <button className='delete' aria-label='close' onClick={closeModal} />}
         </header>
         <section className='modal-card-body'>
           {notification.show && (
@@ -122,9 +124,11 @@ const ModalEmployee = ({ employee, isUpdate, setComponentEmployee }) => {
           <button className='button is-success' onClick={manageContent}>
             Save changes
           </button>
-          <button className='button' onClick={closeModal}>
-            Cancel
-          </button>
+          {!loading && (
+            <button className='button' onClick={closeModal}>
+              Cancel
+            </button>
+          )}
           {loading && (
             <progress className='progress is-small is-primary' max={100}>
               15%

@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import ModalEmployee from './ModalEmployee';
-import CatDog from '../ServiceContentful/CatDog';
+import { deleteEmployee as deleteUser } from '../ServiceContentful/contentful-management';
 import { getAllEmployee } from '../ServiceContentful/contentful-delivery';
 
 const FetchData = async (setEmployeeList) => {
-  console.log('Solicitado');
   const response = await getAllEmployee();
   const rows = response.items.map((currentValue) => {
     const {
@@ -48,18 +47,23 @@ const TrBody = ({ employeeList, updateEmployee, deleteEmployee }) => {
 const TableEmployee = () => {
   const [employeeList, setEmployeeList] = useState([]);
   const [componentEmployee, setComponentEmployee] = useState(null);
-
-  const updateList = useCallback(() => FetchData(setEmployeeList), []);
+  const [notification, setNotification] = useState({ show: false, message: '', isSuccess: true });
+  const [loading, setLoading] = useState(false);
 
   const deleteEmployee = useCallback(
     ({ id }) => () => {
-      CatDog.deleteEmployee(id)
+      setLoading(true);
+      deleteUser(id)
         .then((result) => {
           console.log(result);
           FetchData(setEmployeeList);
+          setNotification({ show: true, message: result, isSuccess: true });
+          setLoading(false);
         })
         .catch((error) => {
           console.log(error);
+          setNotification({ show: true, message: error, isSuccess: false });
+          setLoading(false);
         });
     },
     []
@@ -67,6 +71,7 @@ const TableEmployee = () => {
 
   const updateEmployee = useCallback(
     (employee) => () => {
+      setNotification({ show: false });
       setComponentEmployee(
         <ModalEmployee isUpdate={true} employee={employee} setComponentEmployee={setComponentEmployee} />
       );
@@ -75,6 +80,7 @@ const TableEmployee = () => {
   );
 
   const createEmployee = useCallback(() => {
+    setNotification({ show: false });
     setComponentEmployee(
       <ModalEmployee
         isUpdate={false}
@@ -84,15 +90,32 @@ const TableEmployee = () => {
     );
   }, []);
 
+  useEffect(() => {
+    FetchData(setEmployeeList);
+  }, []);
+
+  useEffect(() => {
+    FetchData(setEmployeeList);
+  }, [componentEmployee]);
+
   const body = <TrBody updateEmployee={updateEmployee} deleteEmployee={deleteEmployee} employeeList={employeeList} />;
   return (
     <>
+      {notification.show && (
+        <div className={`notification is-light ${notification.isSuccess ? 'is-primary' : 'is-danger'}`}>
+          <button className='delete' onClick={() => setNotification({ show: false })}></button>
+          {notification.message}
+        </div>
+      )}
+      {loading && (
+        <progress className='progress is-small is-info' max={100}>
+          15%
+        </progress>
+      )}
+
       <div className='buttons'>
         <button onClick={createEmployee} className='button is-link'>
           Create Employee
-        </button>
-        <button onClick={updateList} className='button is-link'>
-          Fetch Data
         </button>
       </div>
       <table className='table is-fullwidth is-hoverable'>
