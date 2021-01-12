@@ -8,4 +8,5 @@ const CatDog = {
   getAllEmployee,
   getAllDisability,
 };
+
 export default CatDog;

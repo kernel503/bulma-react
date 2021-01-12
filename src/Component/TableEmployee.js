@@ -1,32 +1,68 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ModalEmployee from './ModalEmployee';
 import CatDog from '../ServiceContentful/CatDog';
+import { getAllEmployee } from '../ServiceContentful/contentful-delivery';
+
+const FetchData = async (setEmployeeList) => {
+  console.log('Solicitado');
+  const response = await getAllEmployee();
+  const rows = response.items.map((currentValue) => {
+    const {
+      sys: { id },
+      fields: { username, code, startDate, dui, position },
+    } = currentValue;
+    return { id, username, code, startDate, dui, position };
+  });
+  setEmployeeList(rows);
+};
+
+const TrBody = ({ employeeList, updateEmployee, deleteEmployee }) => {
+  return employeeList.map((element) => {
+    const { id, username, code, startDate, dui, position } = element;
+    return (
+      <tr key={id}>
+        <td>{username}</td>
+        <td>{code}</td>
+        <td>{new Date(startDate).toLocaleString()}</td>
+        <td>{dui}</td>
+        <td>{position}</td>
+        <td>
+          <p className='buttons'>
+            <button onClick={updateEmployee(element)} className='button is-small is-info is-outlined'>
+              <span className='icon is-small'>
+                <i className='fas fa-user-edit' />
+              </span>
+            </button>
+            <button onClick={deleteEmployee(element)} className='button is-small is-danger is-outlined'>
+              <span className='icon is-small'>
+                <i className='fas fa-user-times' />
+              </span>
+            </button>
+          </p>
+        </td>
+      </tr>
+    );
+  });
+};
 
 const TableEmployee = () => {
   const [employeeList, setEmployeeList] = useState([]);
   const [componentEmployee, setComponentEmployee] = useState(null);
 
+  const updateList = useCallback(() => FetchData(setEmployeeList), []);
+
   const deleteEmployee = useCallback(
     ({ id }) => () => {
-      console.log(id, 'delete');
       CatDog.deleteEmployee(id)
         .then((result) => {
           console.log(result);
+          FetchData(setEmployeeList);
         })
         .catch((error) => {
-          console.log(error);
-        });
-      CatDog.getAllEmployee
-        .then((result) => {
-          console.log(result);
-          setEmployeeList(result.reverse());
-        })
-        .catch((error) => {
-          setEmployeeList([]);
           console.log(error);
         });
     },
-    [setEmployeeList]
+    []
   );
 
   const updateEmployee = useCallback(
@@ -48,33 +84,15 @@ const TableEmployee = () => {
     );
   }, []);
 
-  useEffect(() => {
-    CatDog.getAllEmployee
-      .then((result) => {
-        setEmployeeList(result);
-      })
-      .catch((error) => {
-        setEmployeeList([]);
-        console.log(error);
-      });
-  }, []);
-
-  useEffect(() => {
-    CatDog.getAllEmployee
-      .then((result) => {
-        setEmployeeList(result);
-      })
-      .catch((error) => {
-        setEmployeeList([]);
-        console.log(error);
-      });
-  }, [employeeList]);
-
+  const body = <TrBody updateEmployee={updateEmployee} deleteEmployee={deleteEmployee} employeeList={employeeList} />;
   return (
     <>
       <div className='buttons'>
         <button onClick={createEmployee} className='button is-link'>
           Create Employee
+        </button>
+        <button onClick={updateList} className='button is-link'>
+          Fetch Data
         </button>
       </div>
       <table className='table is-fullwidth is-hoverable'>
@@ -88,34 +106,7 @@ const TableEmployee = () => {
             <th>Config</th>
           </tr>
         </thead>
-        <tbody>
-          {employeeList.map((element) => {
-            const { id, username, code, startDate, dui, position } = element;
-            return (
-              <tr key={id}>
-                <td>{username}</td>
-                <td>{code}</td>
-                <td>{new Date(startDate).toLocaleString()}</td>
-                <td>{dui}</td>
-                <td>{position}</td>
-                <td>
-                  <p className='buttons'>
-                    <button onClick={updateEmployee(element)} className='button is-small is-info is-outlined'>
-                      <span className='icon is-small'>
-                        <i className='fas fa-user-edit' />
-                      </span>
-                    </button>
-                    <button onClick={deleteEmployee(element)} className='button is-small is-danger is-outlined'>
-                      <span className='icon is-small'>
-                        <i className='fas fa-user-times' />
-                      </span>
-                    </button>
-                  </p>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
+        <tbody>{body}</tbody>
       </table>
       {componentEmployee}
     </>

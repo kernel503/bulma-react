@@ -8,6 +8,7 @@ const menuOptions = ['Agregar incapacidad', 'Gestionar empleados'];
 
 function App() {
   const [optionSelected, setOptionSelected] = useState(-1);
+  const [refresh, setRefresh] = useState(false);
 
   const setActiveOption = useCallback((key) => (event) => setOptionSelected(key), []);
   let innerContent = null;
@@ -16,7 +17,7 @@ function App() {
       innerContent = <h1>Hello</h1>;
       break;
     case 1:
-      innerContent = <TableEmployee></TableEmployee>;
+      innerContent = <TableEmployee setRefresh={setRefresh} refresh={refresh}></TableEmployee>;
       break;
     default:
       innerContent = null;
