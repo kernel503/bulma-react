@@ -9,14 +9,13 @@ const TableEmployee = () => {
   const deleteEmployee = useCallback(
     ({ id }) => () => {
       console.log(id, 'delete');
-      // CatDog.deleteEmployee(id)
-      //   .then((result) => {
-      //     console.log(result);
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //   });
-      console.log('llega');
+      CatDog.deleteEmployee(id)
+        .then((result) => {
+          console.log(result);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
       CatDog.getAllEmployee
         .then((result) => {
           console.log(result);
